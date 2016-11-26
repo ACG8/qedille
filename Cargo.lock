@@ -1,0 +1,30 @@
+[root]
+name = "qedille"
+version = "0.1.0"
+dependencies = [
+ "piston_meta 0.27.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "range 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "piston_meta"
+version = "0.27.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "range 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "read_token 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "range"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "read_token"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "range 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
