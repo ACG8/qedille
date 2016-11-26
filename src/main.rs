@@ -52,20 +52,6 @@ fn regurgitate( ast: & [ Range<MetaData> ] ) {
     let mut nodelist = ast.into_iter();
     let testerm = make_term(&mut nodelist);
     println!("test: {}",testerm);
-    loop {
-        match nodelist.next() {
-            Some(metadata) => {
-                match metadata.data {
-                    StartNode(ref arcstring) => {println!("Start Node: {}",arcstring)}
-                    EndNode(ref arcstring) => {println!("End Node: {}",arcstring)}
-                    Bool(ref arcstring,_) => {println!("Bool: {}",arcstring)}
-                    F64 (ref arcstring,_) => {}
-                    String (ref arcstring1,ref arcstring2) => {println!("String: {}={}",arcstring1,arcstring2)}
-                }
-            }
-            None => break
-        }
-    }
 }
     
 fn main() {

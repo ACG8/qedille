@@ -9,9 +9,18 @@ pub enum Term {
     Const(Const),
     App(Box<Term>,Box<Term>),
     Lam(Var,Box<Term>),
-    Par(Box<Term>,Box<Term>),
-    Asg(Box<Term>,Box<Term>,Box<Term>),
-    Rec(Var,Var,Box<Term>,Box<Term>)
+//    Par(Box<Term>,Box<Term>),
+//    Asg(Box<Term>,Box<Term>,Box<Term>),
+//    Rec(Var,Var,Box<Term>,Box<Term>)
+}
+
+pub fn betared(t: &Term) -> Term {
+    return match *t {
+        Term::Var( ref v ) => Term::Var( v ),
+        Term::Const( ref c ) => Term::Const( c ),
+        Term::App(ref a, ref b) => Term::App(Box::new(betared(a)),Box::new(betared(b))),
+        Term::Lam(ref v, ref a) => Term::Lam(*v,Box::new(betared(a))),
+    }
 }
 
 use std::fmt;
@@ -34,7 +43,7 @@ impl fmt::Display for Term {
                         },
                 },
             Term::Lam( ref v, ref t ) => write!(f, "λ{}.{}", v, t),
-            _ => write!(f, "{}", "_"), //=BUG= fill in the rest of them
+        //    _ => write!(f, "{}", "_"), //=BUG= fill in the rest of them
         }
     }
 }
