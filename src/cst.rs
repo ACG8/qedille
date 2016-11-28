@@ -1,6 +1,7 @@
 use cfg::*;
 use range::Range;
 
+#[derive(Clone)]
 pub enum Const {
     H,
     New,

@@ -4,6 +4,7 @@ use var::*;
 use cst::*;
 use range::Range;
 
+#[derive(Clone)]
 pub enum Term {
     Var(Var),
     Const(Const),
@@ -14,12 +15,33 @@ pub enum Term {
 //    Rec(Var,Var,Box<Term>,Box<Term>)
 }
 
+//"substitute t2 for x in t1"
+fn subst(t2:&Term, x:&Var, t1:&Term) -> Term {
+    return match *t1 {
+        Term::Var( ref v ) => {
+            match *v {
+                x => t2.clone(),
+                _ => t1.clone(),
+            }
+        },
+        Term::Const( ref c ) => t1.clone(),
+        Term::App(ref a, ref b) => Term::App(Box::new(subst(t2,x,a)),Box::new(subst(t2,x,b))),
+        Term::Lam(ref v, ref a) => Term::Lam(v.clone(),Box::new(subst(t2,x,a))),
+    }
+}
+
 pub fn betared(t: &Term) -> Term {
     return match *t {
-        Term::Var( ref v ) => Term::Var( v ),
-        Term::Const( ref c ) => Term::Const( c ),
-        Term::App(ref a, ref b) => Term::App(Box::new(betared(a)),Box::new(betared(b))),
-        Term::Lam(ref v, ref a) => Term::Lam(*v,Box::new(betared(a))),
+        Term::Var( ref v ) => Term::Var(v.clone() ),
+        Term::Const( ref c ) => Term::Const(c.clone() ),
+        Term::App(ref a, ref b) => {
+            match *a {
+                Term::Lam(x,t) => subst(b,&x,t),
+                _ => Term::App(Box::new(betared(a)),Box::new(betared(b))),
+            }
+        },
+        
+        Term::Lam(ref v, ref a) => Term::Lam(v.clone(),Box::new(betared(a))),
     }
 }
 

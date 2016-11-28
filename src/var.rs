@@ -2,6 +2,7 @@
 use cfg::*;
 use range::Range;
 
+#[derive(Clone)]
 pub enum Var {
     Null,
     Var(String),
