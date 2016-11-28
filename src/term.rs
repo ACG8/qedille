@@ -20,8 +20,8 @@ fn subst(t2:&Term, x:&Var, t1:&Term) -> Term {
     return match *t1 {
         Term::Var( ref v ) => {
             match *v {
-                x => t2.clone(),
-                _ => t1.clone(),
+                Var::Null => t1.clone(),
+                ref x => t2.clone(),
             }
         },
         Term::Const( ref c ) => t1.clone(),
@@ -35,8 +35,8 @@ pub fn betared(t: &Term) -> Term {
         Term::Var( ref v ) => Term::Var(v.clone() ),
         Term::Const( ref c ) => Term::Const(c.clone() ),
         Term::App(ref a, ref b) => {
-            match *a {
-                Term::Lam(x,t) => subst(b,&x,t),
+            match **a {
+                Term::Lam(ref x,ref t) => subst(b,&x,&*t),
                 _ => Term::App(Box::new(betared(a)),Box::new(betared(b))),
             }
         },

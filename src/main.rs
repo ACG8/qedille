@@ -50,12 +50,12 @@ fn mk_parser() -> Result<Syntax, String> {
 fn regurgitate( ast: & [ Range<MetaData> ] ) {
     use cfg::MetaData::*;
     let mut nodelist = ast.into_iter();
-    let testerm = make_term(&mut nodelist);
+    let testerm = betared(&make_term(&mut nodelist));
     println!("test: {}",testerm);
 }
     
 fn main() {
-    let text = r#"[Lx.[x [x x]] meas]"#;
+    let text = r#"[Lx.[x [x x]] (Lx.x)]"#;
 
     let rules = match mk_parser() {
         Err(err) => {
