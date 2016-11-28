@@ -22,7 +22,6 @@ impl fmt::Display for Var {
 pub fn make_var<'a,T>( nodelist: &mut T ) -> Var
     where T: Iterator<Item=&'a Range<MetaData>> {
     use cfg::MetaData::*;
-    use std::sync::Arc;
     use std::string;
     return match nodelist.next() {
         Some(metadata) => {

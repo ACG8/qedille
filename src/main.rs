@@ -2,15 +2,17 @@ extern crate piston_meta;
 
 extern crate piston_meta as cfg;
 extern crate range;
+extern crate rand;
 
 use cfg::*;
 use range::Range;
 use term::*;
+use qubit::Qubit; //Should access only through term
 
 mod term;
 mod var;
 mod cst;
-
+mod qubit;
 
 fn mk_parser() -> Result<Syntax, String> {
     let rules = r#"  
@@ -52,6 +54,7 @@ fn regurgitate( ast: & [ Range<MetaData> ] ) {
     let mut nodelist = ast.into_iter();
     let testerm = betared(&make_term(&mut nodelist));
     println!("test: {}",testerm);
+    println!("testqubit: {}",qubit::Qubit{ theta: 0.5, phi: 0.0 }.meas());
 }
     
 fn main() {

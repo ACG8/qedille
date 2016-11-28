@@ -23,7 +23,6 @@ impl fmt::Display for Const {
 pub fn make_const<'a,T>( nodelist: &mut T ) -> Const
     where T: Iterator<Item=&'a Range<MetaData>> {
     use cfg::MetaData::*;
-    use std::sync::Arc;
 //    =BUG= currently assuming there is only one term.
     return match nodelist.next() {
         Some(metadata) => {

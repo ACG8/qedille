@@ -6,3 +6,4 @@ authors = ["guneratne"]
 [dependencies]
 piston_meta = "*"
 range = "*"
+rand = "*"

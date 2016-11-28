@@ -21,10 +21,10 @@ fn subst(t2:&Term, x:&Var, t1:&Term) -> Term {
         Term::Var( ref v ) => {
             match *v {
                 Var::Null => t1.clone(),
-                ref x => t2.clone(),
+                _ => t2.clone(),
             }
         },
-        Term::Const( ref c ) => t1.clone(),
+        Term::Const( _ ) => t1.clone(),
         Term::App(ref a, ref b) => Term::App(Box::new(subst(t2,x,a)),Box::new(subst(t2,x,b))),
         Term::Lam(ref v, ref a) => Term::Lam(v.clone(),Box::new(subst(t2,x,a))),
     }
@@ -73,7 +73,6 @@ impl fmt::Display for Term {
 pub fn make_term<'a,T>( nodelist: &mut T ) -> Term
     where T: Iterator<Item=&'a Range<MetaData>> {
     use cfg::MetaData::*;
-    use std::sync::Arc;
 //    =BUG= currently assuming there is only one term.
     return match nodelist.next() {
         Some(metadata) => {
