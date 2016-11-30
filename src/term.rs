@@ -10,7 +10,7 @@ pub enum Term {
     Const(Const),
     App(Box<Term>,Box<Term>),
     Lam(Var,Box<Term>),
-//    Par(Box<Term>,Box<Term>),
+    Par(Box<Term>,Box<Term>),
 //    Asg(Box<Term>,Box<Term>,Box<Term>),
 //    Rec(Var,Var,Box<Term>,Box<Term>)
 }
@@ -27,6 +27,7 @@ fn subst(t2:&Term, x:&Var, t1:&Term) -> Term {
         Term::Const( _ ) => t1.clone(),
         Term::App(ref a, ref b) => Term::App(Box::new(subst(t2,x,a)),Box::new(subst(t2,x,b))),
         Term::Lam(ref v, ref a) => Term::Lam(v.clone(),Box::new(subst(t2,x,a))),
+        Term::Par(ref a, ref b) => Term::Par(Box::new(subst(t2,x,a)),Box::new(subst(t2,x,b))),
     }
 }
 
@@ -40,7 +41,7 @@ pub fn betared(t: &Term) -> Term {
                 _ => Term::App(Box::new(betared(a)),Box::new(betared(b))),
             }
         },
-        
+        Term::Par(ref a, ref b) => Term::Par(Box::new(betared(a)),Box::new(betared(b))),
         Term::Lam(ref v, ref a) => Term::Lam(v.clone(),Box::new(betared(a))),
     }
 }
@@ -64,6 +65,7 @@ impl fmt::Display for Term {
                             _ => write!(f, "{} {}", a, b),
                         },
                 },
+            Term::Par( ref a, ref b ) => write!(f, "<{},{}>", a, b), //todo: syntactic sugar for tuples greater than 2
             Term::Lam( ref v, ref t ) => write!(f, "λ{}.{}", v, t),
         //    _ => write!(f, "{}", "_"), //=BUG= fill in the rest of them
         }
@@ -83,6 +85,7 @@ pub fn make_term<'a,T>( nodelist: &mut T ) -> Term
                         "lam" => Term::Lam(make_var(nodelist),Box::new(make_term(nodelist))),
                         "app" => Term::App(Box::new(make_term(nodelist)),Box::new(make_term(nodelist))),
                         "const" => Term::Const(make_const(nodelist)),
+                        "pair" => Term::Par(Box::new(make_term(nodelist)),Box::new(make_term(nodelist))),
                         _ => make_term(nodelist),
                     }
                     
