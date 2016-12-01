@@ -11,7 +11,7 @@ pub enum Term {
     App(Box<Term>,Box<Term>),
     Lam(Var,Box<Term>),
     Par(Box<Term>,Box<Term>),
-//    Asg(Box<Term>,Box<Term>,Box<Term>),
+    Asg(Box<Term>,Box<Term>,Box<Term>),
 //    Rec(Var,Var,Box<Term>,Box<Term>)
 }
 
@@ -28,6 +28,7 @@ fn subst(t2:&Term, x:&Var, t1:&Term) -> Term {
         Term::App(ref a, ref b) => Term::App(Box::new(subst(t2,x,a)),Box::new(subst(t2,x,b))),
         Term::Lam(ref v, ref a) => Term::Lam(v.clone(),Box::new(subst(t2,x,a))),
         Term::Par(ref a, ref b) => Term::Par(Box::new(subst(t2,x,a)),Box::new(subst(t2,x,b))),
+        Term::Asg(ref a, ref b, ref c) => Term::Asg(a.clone(),Box::new(subst(t2,x,b)),Box::new(subst(t2,x,c))),
     }
 }
 
@@ -43,6 +44,42 @@ pub fn betared(t: &Term) -> Term {
         },
         Term::Par(ref a, ref b) => Term::Par(Box::new(betared(a)),Box::new(betared(b))),
         Term::Lam(ref v, ref a) => Term::Lam(v.clone(),Box::new(betared(a))),
+        Term::Asg(ref a, ref b, ref c) => {
+            match **a {
+                Term::Var( ref v ) => {
+                    Term::App(
+                        Box::new(Term::Lam( v.clone(), Box::new(betared(c)) )),
+                        Box::new(betared(b))
+                    )
+                },/*
+                Term::Par( ref x, ref y ) =>
+                    match **b {
+                        Term::Par( ref t1, ref t2 ) => {
+                            Box::new(
+                                &Term::Asg( x.clone(), 
+                            /*
+                            Term::App(
+                                Term::App(
+                                    Term::Lam(
+                                        x.clone(),
+                                        Box::new(
+                                            &Term::Lam(
+                                                y.clone(),
+                                                Box::new(betared(c))
+                                            )
+                                        )
+                                    ),
+                                    Box::new(betared(t1))
+                                ),
+                                Box::new(betared(t2))
+                            )
+                        },*/
+                                            _ => unreachable!(), // raise error
+                                            
+                    },*/
+                _ => unreachable!(), //raise error
+            }
+        },
     }
 }
 
@@ -67,6 +104,7 @@ impl fmt::Display for Term {
                 },
             Term::Par( ref a, ref b ) => write!(f, "<{},{}>", a, b), //todo: syntactic sugar for tuples greater than 2
             Term::Lam( ref v, ref t ) => write!(f, "λ{}.{}", v, t),
+            Term::Asg( ref v, ref t2, ref t1 ) => write!(f, "let {} = {} in {}", v, t2, t1),
         //    _ => write!(f, "{}", "_"), //=BUG= fill in the rest of them
         }
     }
@@ -86,6 +124,7 @@ pub fn make_term<'a,T>( nodelist: &mut T ) -> Term
                         "app" => Term::App(Box::new(make_term(nodelist)),Box::new(make_term(nodelist))),
                         "const" => Term::Const(make_const(nodelist)),
                         "pair" => Term::Par(Box::new(make_term(nodelist)),Box::new(make_term(nodelist))),
+                        "assign" => Term::Asg(Box::new(make_term(nodelist)),Box::new(make_term(nodelist)),Box::new(make_term(nodelist))),
                         _ => make_term(nodelist),
                     }
                     
