@@ -58,6 +58,9 @@ fn regurgitate( ast: & [ Range<MetaData> ] ) {
 }
     
 fn main() {
+    use std::io;
+    use std::io::prelude::*;
+    use cfg::MetaData::*;
     let text = r#"[Lx.[x [x x]] (Lx.x)]"#;
 
     let rules = match mk_parser() {
@@ -67,15 +70,33 @@ fn main() {
 	}
         Ok(rules) => rules
     };
-    let mut data = vec![];
+    /*let mut data = vec![];
     match parse_errstr(&rules, text, &mut data) {
 	Err(err) => {
 	    println!("{}", err);
 	    return;
 	}
 	Ok(ast) => regurgitate( &data )
-    };
+    };*/
     
     //json::print(&data);
+  //input
+  let stdin = io::stdin();
+  for line in stdin.lock().lines() {
+      let input = line.unwrap();
+      let mut data = vec![];
+      match parse_errstr(&rules, &input[..], &mut data) {
+        Err(err) => {
+            println!("{}", err);
+            return;
+        }
+        Ok(ast) => (),
+      };
+      let mut nodelist = (&data).into_iter();
+      let term = make_term(&mut nodelist);
+      println!("Term: {}",term);
+      let reduced = betared(&term);
+      println!("Reduced term: {}", reduced);
+  }
 }
 
