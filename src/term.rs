@@ -20,8 +20,13 @@ fn subst(t2:&Term, x:&Var, t1:&Term) -> Term {
     return match *t1 {
         Term::Var( ref v ) => {
             match *v {
-                Var::Null => t1.clone(),
-                _ => t2.clone(),
+                Var::Var(ref a) => {
+                    match *x {
+                        Var::Var(ref b) => if a==b {t2.clone()} else {t1.clone()},
+                        _ => t1.clone(),
+                    }
+                },
+                _ => t1.clone(),
             }
         },
         Term::Const( _ ) => t1.clone(),
