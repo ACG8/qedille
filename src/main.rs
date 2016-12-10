@@ -22,19 +22,20 @@ fn mk_parser() -> Result<Syntax, String> {
           ["L" .w? {0-tuple:"null" variable:"binds"} .w? "." .w? term:"body"]
         6 pair = ["<" .w? term:"pair0" .w? "," .w? term:"pair1" .w? ">"]
         7 assignment = 
-          ["let" .w! {variable:"var" pair:"pair"} .w? "=" .w? term .w! "in" term]
+          ["let" .w! {variable:"var" pair:"pair"} .w? "=" .w? term .w! "in" .w! term]
         8 rec-fn = 
           ["let rec" .w! variable:"funcvar" .w! variable:"argvar" .w? 
           "=" .w? term .w! "in" term]
         9 innerterm = {
+          assignment:"assign"
+          rec-fn:"rec"
           constant:"const"
           variable:"var"
           application:"app"
           lambda:"lam"
           pair:"pair"
           0-tuple:"null"
-          assignment:"assign"
-          rec-fn:"rec"
+
         }
        10 term = { ["(" .w? innerterm .w? ")"] innerterm}        
        11 document = term:"term"
