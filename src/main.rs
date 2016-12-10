@@ -26,7 +26,9 @@ fn mk_parser() -> Result<Syntax, String> {
         8 rec-fn = 
           ["let rec" .w! variable:"funcvar" .w! variable:"argvar" .w? 
           "=" .w? term .w! "in" .w! term]
-        9 innerterm = {
+        9 injl = ["injl(" .w? term .w? ")"]
+        10 injr = ["injr(" .w? term .w? ")"]
+        11 innerterm = {
           assignment:"assign"
           rec-fn:"rec"
           constant:"const"
@@ -35,10 +37,11 @@ fn mk_parser() -> Result<Syntax, String> {
           lambda:"lam"
           pair:"pair"
           0-tuple:"null"
-
+          injl:"injl"
+          injr:"injr"
         }
-       10 term = { ["(" .w? innerterm .w? ")"] innerterm}        
-       11 document = term:"term"
+       12 term = { ["(" .w? innerterm .w? ")"] innerterm}        
+       13 document = term:"term"
 	"#;
     match syntax_errstr(rules) {
         Err(err) => return Err(

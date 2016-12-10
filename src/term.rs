@@ -13,6 +13,8 @@ pub enum Term {
     Par(Box<Term>,Box<Term>),
     Asg(Box<Term>,Box<Term>,Box<Term>),
     Rec(Var,Var,Box<Term>,Box<Term>),
+    Injl(Box<Term>),
+    Injr(Box<Term>),
 }
 
 //"substitute t2 for x in t1"
@@ -34,7 +36,9 @@ fn subst(t2:&Term, x:&Var, t1:&Term) -> Term {
         Term::Lam(ref v, ref a) => Term::Lam(v.clone(),Box::new(subst(t2,x,a))),
         Term::Par(ref a, ref b) => Term::Par(Box::new(subst(t2,x,a)),Box::new(subst(t2,x,b))),
         Term::Asg(ref a, ref b, ref c) => Term::Asg(a.clone(),Box::new(subst(t2,x,b)),Box::new(subst(t2,x,c))),
-        Term::Rec(ref f, ref x, ref M, ref N) => Term::Rec(f.clone(),x.clone(),Box::new(subst(t2,x,M)),Box::new(subst(t2,x,N))),
+        Term::Rec(ref f, ref x, ref m, ref n) => Term::Rec(f.clone(),x.clone(),Box::new(subst(t2,x,m)),Box::new(subst(t2,x,n))),
+        Term::Injl(ref t) => Term::Injl(Box::new(subst(t2,x,t))),
+        Term::Injr(ref t) => Term::Injr(Box::new(subst(t2,x,t))),
     }
 }
 
@@ -69,9 +73,11 @@ pub fn betared(t: &Term) -> Term {
                 _ => t.clone(),
             }
         },
-        Term::Rec(ref f, ref x, ref M, ref N) => {
-            subst(&Term::Lam(x.clone(),Box::new(Term::Rec(f.clone(),x.clone(),M.clone(),M.clone()))),f,N)
+        Term::Rec(ref f, ref x, ref m, ref n) => {
+            subst(&Term::Lam(x.clone(),Box::new(Term::Rec(f.clone(),x.clone(),m.clone(),m.clone()))),f,n)
         },
+        Term::Injl(ref t) => Term::Injl(Box::new(betared(t))),
+        Term::Injr(ref t) => Term::Injr(Box::new(betared(t))),
     }
 }
 
@@ -97,7 +103,9 @@ impl fmt::Display for Term {
             Term::Par( ref a, ref b ) => write!(f, "<{},{}>", a, b), //todo: syntactic sugar for tuples greater than 2
             Term::Lam( ref v, ref t ) => write!(f, "λ{}.{}", v, t),
             Term::Asg( ref v, ref t2, ref t1 ) => write!(f, "let {} = {} in {}", v, t2, t1),
-            Term::Rec( ref F, ref x, ref M, ref N) => write!(f, "let rec {} {} = {} in {}", F, x, M, N),
+            Term::Rec( ref fun, ref x, ref m, ref n) => write!(f, "let rec {} {} = {} in {}", fun, x, m, n),
+            Term::Injl( ref t ) => write!(f, "injl({})", t),
+            Term::Injr( ref t ) => write!(f, "injr({})", t),
         }
     }
 }
@@ -118,6 +126,8 @@ pub fn make_term<'a,T>( nodelist: &mut T ) -> Term
                         "pair" => Term::Par(Box::new(make_term(nodelist)),Box::new(make_term(nodelist))),
                         "assign" => Term::Asg(Box::new(make_term(nodelist)),Box::new(make_term(nodelist)),Box::new(make_term(nodelist))),
                         "rec" => Term::Rec(make_var(nodelist),make_var(nodelist),Box::new(make_term(nodelist)),Box::new(make_term(nodelist))),
+                        "injl" => Term::Injl(Box::new(make_term(nodelist))),
+                        "injr" => Term::Injr(Box::new(make_term(nodelist))),
                         _ => make_term(nodelist),
                     }
                     
