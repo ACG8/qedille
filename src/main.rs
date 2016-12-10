@@ -25,7 +25,7 @@ fn mk_parser() -> Result<Syntax, String> {
           ["let" .w! {variable:"var" pair:"pair"} .w? "=" .w? term .w! "in" .w! term]
         8 rec-fn = 
           ["let rec" .w! variable:"funcvar" .w! variable:"argvar" .w? 
-          "=" .w? term .w! "in" term]
+          "=" .w? term .w! "in" .w! term]
         9 innerterm = {
           assignment:"assign"
           rec-fn:"rec"
