@@ -19,11 +19,11 @@ pub struct Qubit {
 impl fmt::Display for Qubit {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         use std::f64::consts::PI;
-        let A: f64 = (self.theta * PI * 0.5).sin();
-        let B: f64 = (self.theta * PI * 0.5).cos();
-        if A == 1.0 { return write!(f, "❘0⟩"); }
-        else if B == 1.0 { return write!(f, "❘1⟩"); }
-        else { return write!(f, "{}❘0⟩ + {}❘1⟩", A, B); }
+        let a: f64 = (self.theta * PI * 0.5).sin();
+        let b: f64 = (self.theta * PI * 0.5).cos();
+        if a == 1.0 { return write!(f, "❘0⟩"); }
+        else if b == 1.0 { return write!(f, "❘1⟩"); }
+        else { return write!(f, "{}❘0⟩ + {}❘1⟩", a, b); }
     }
 }
 

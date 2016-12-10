@@ -52,37 +52,20 @@ pub fn betared(t: &Term) -> Term {
         Term::Asg(ref a, ref b, ref c) => {
             match **a {
                 Term::Var( ref v ) => {
-                    Term::App(
-                        Box::new(Term::Lam( v.clone(), Box::new(betared(c)) )),
-                        Box::new(betared(b))
-                    )
-                },/*
+                    subst(b,v,c)
+                },
                 Term::Par( ref x, ref y ) =>
-                    match **b {
-                        Term::Par( ref t1, ref t2 ) => {
-                            Box::new(
-                                &Term::Asg( x.clone(), 
-                            /*
-                            Term::App(
-                                Term::App(
-                                    Term::Lam(
-                                        x.clone(),
-                                        Box::new(
-                                            &Term::Lam(
-                                                y.clone(),
-                                                Box::new(betared(c))
-                                            )
-                                        )
-                                    ),
-                                    Box::new(betared(t1))
-                                ),
-                                Box::new(betared(t2))
-                            )
-                        },*/
-                                            _ => unreachable!(), // raise error
-                                            
-                    },*/
-                _ => unreachable!(), //raise error
+                    match (*x.clone(),*y.clone()) {
+                        (Term::Var( ref x0 ), Term::Var( ref y0 )) =>
+                            match **b {
+                                Term ::Par(ref t1, ref t2) => {
+                                    subst(t1,x0,&subst(t2,y0,c))
+                                },   
+                                _ => t.clone(),
+                            },
+                        _ => t.clone(),
+                    },
+                _ => t.clone(),
             }
         },
     }
