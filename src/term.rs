@@ -15,6 +15,7 @@ pub enum Term {
     Rec(Var,Var,Box<Term>,Box<Term>),
     Injl(Box<Term>),
     Injr(Box<Term>),
+    Mat(Box<Term>,Var,Box<Term>,Var,Box<Term>),
 }
 
 //"substitute t2 for x in t1"
@@ -39,6 +40,15 @@ fn subst(t2:&Term, x:&Var, t1:&Term) -> Term {
         Term::Rec(ref f, ref x, ref m, ref n) => Term::Rec(f.clone(),x.clone(),Box::new(subst(t2,x,m)),Box::new(subst(t2,x,n))),
         Term::Injl(ref t) => Term::Injl(Box::new(subst(t2,x,t))),
         Term::Injr(ref t) => Term::Injr(Box::new(subst(t2,x,t))),
+        Term::Mat(ref a, ref x, ref b, ref y, ref c) => {
+            Term::Mat(
+                Box::new(subst(t2,x,a)),
+                x.clone(),
+                Box::new(subst(t2,x,b)),
+                y.clone(),
+                Box::new(subst(t2,x,c))
+            )
+        },
     }
 }
 
@@ -76,8 +86,14 @@ pub fn betared(t: &Term) -> Term {
         Term::Rec(ref f, ref x, ref m, ref n) => {
             subst(&Term::Lam(x.clone(),Box::new(Term::Rec(f.clone(),x.clone(),m.clone(),m.clone()))),f,n)
         },
-        Term::Injl(ref t) => Term::Injl(Box::new(betared(t))),
-        Term::Injr(ref t) => Term::Injr(Box::new(betared(t))),
+        Term::Injl(ref term) => Term::Injl(Box::new(betared(term))),
+        Term::Injr(ref term) => Term::Injr(Box::new(betared(term))),
+        Term::Mat(ref a, ref x, ref b, ref y, ref c) =>
+            match **a {
+                Term::Injl(ref term) => subst(term,x,b),
+                Term::Injr(ref term) => subst(term,y,c),
+                _ => t.clone(),
+            },
     }
 }
 
@@ -106,33 +122,35 @@ impl fmt::Display for Term {
             Term::Rec( ref fun, ref x, ref m, ref n) => write!(f, "let rec {} {} = {} in {}", fun, x, m, n),
             Term::Injl( ref t ) => write!(f, "injl({})", t),
             Term::Injr( ref t ) => write!(f, "injr({})", t),
+            Term::Mat( ref a, ref x, ref b, ref y, ref c) => write!(f, "match {} with ({}->{}|{}->{})",a,x,b,y,c),
         }
     }
 }
 
-pub fn make_term<'a,T>( nodelist: &mut T ) -> Term
+pub fn make_term<'a,T>( nlst: &mut T ) -> Term
     where T: Iterator<Item=&'a Range<MetaData>> {
     use cfg::MetaData::*;
 //    =BUG= currently assuming there is only one term.
-    return match nodelist.next() {
+    return match nlst.next() {
         Some(metadata) => {
             match metadata.data {
                 StartNode(ref arcstring) => {
                     match &arcstring[..] {
-                        "var" => Term::Var(make_var(nodelist)),
-                        "lam" => Term::Lam(make_var(nodelist),Box::new(make_term(nodelist))),
-                        "app" => Term::App(Box::new(make_term(nodelist)),Box::new(make_term(nodelist))),
-                        "const" => Term::Const(make_const(nodelist)),
-                        "pair" => Term::Par(Box::new(make_term(nodelist)),Box::new(make_term(nodelist))),
-                        "assign" => Term::Asg(Box::new(make_term(nodelist)),Box::new(make_term(nodelist)),Box::new(make_term(nodelist))),
-                        "rec" => Term::Rec(make_var(nodelist),make_var(nodelist),Box::new(make_term(nodelist)),Box::new(make_term(nodelist))),
-                        "injl" => Term::Injl(Box::new(make_term(nodelist))),
-                        "injr" => Term::Injr(Box::new(make_term(nodelist))),
-                        _ => make_term(nodelist),
+                        "var" => Term::Var(make_var(nlst)),
+                        "lam" => Term::Lam(make_var(nlst),Box::new(make_term(nlst))),
+                        "app" => Term::App(Box::new(make_term(nlst)),Box::new(make_term(nlst))),
+                        "const" => Term::Const(make_const(nlst)),
+                        "pair" => Term::Par(Box::new(make_term(nlst)),Box::new(make_term(nlst))),
+                        "assign" => Term::Asg(Box::new(make_term(nlst)),Box::new(make_term(nlst)),Box::new(make_term(nlst))),
+                        "rec" => Term::Rec(make_var(nlst),make_var(nlst),Box::new(make_term(nlst)),Box::new(make_term(nlst))),
+                        "injl" => Term::Injl(Box::new(make_term(nlst))),
+                        "injr" => Term::Injr(Box::new(make_term(nlst))),
+                        "match" => Term::Mat(Box::new(make_term(nlst)),make_var(nlst),Box::new(make_term(nlst)),make_var(nlst),Box::new(make_term(nlst))),
+                        _ => make_term(nlst),
                     }
                     
                 }
-                _ => make_term(nodelist),
+                _ => make_term(nlst),
             }
         }
         None => return Term::Var(Var::Null),

@@ -28,6 +28,8 @@ fn mk_parser() -> Result<Syntax, String> {
           "=" .w? term .w! "in" .w! term]
         9 injl = ["injl(" .w? term .w? ")"]
         10 injr = ["injr(" .w? term .w? ")"]
+        11 match = ["match" .w! {injl:"injl" injr:"injr"} .w! "with" .w! 
+          "(" .w? variable .w? "->" .w? term .w? "|" .w? variable .w? "->" .w? term .w? ")"]
         11 innerterm = {
           assignment:"assign"
           rec-fn:"rec"
@@ -39,6 +41,7 @@ fn mk_parser() -> Result<Syntax, String> {
           0-tuple:"null"
           injl:"injl"
           injr:"injr"
+          match:"match"
         }
        12 term = { ["(" .w? innerterm .w? ")"] innerterm}        
        13 document = term:"term"
