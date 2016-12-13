@@ -16,7 +16,8 @@ fn mk_parser() -> Result<Syntax, String> {
     let rules = r#"  
         1 0-tuple = "*"
         2 constant = {"H":"H" "U":"U" "meas":"meas" "new":"new"}
-        3 variable = {"a":"a" "b":"b" "c":"c" "x":"x" "y":"y" "z":"z"}
+        3 variable = {"a":"a" "b":"b" "c":"c" "d":"d" "e":"e" "f":"f" "g":"g" "h":"h" "i":"i" "j":"j" "k":"k" "l":"l" "m":"m"
+                      "n":"n" "o":"o" "p":"p" "q":"q" "r":"r" "s":"s" "t":"t" "u":"u" "v":"v" "w":"w" "x":"x" "y":"y" "z":"z"}
         4 application = ["[" .w? term:"function" .w! term:"argument" .w? "]"]
         5 lambda = 
           ["L" .w? {0-tuple:"null" variable:"binds"} .w? "." .w? term:"body"]
@@ -30,7 +31,7 @@ fn mk_parser() -> Result<Syntax, String> {
         10 injr = ["injr(" .w? term .w? ")"]
         11 match = ["match" .w! {injl:"injl" injr:"injr"} .w! "with" .w! 
           "(" .w? variable .w? "->" .w? term .w? "|" .w? variable .w? "->" .w? term .w? ")"]
-        11 innerterm = {
+        12 innerterm = {
           assignment:"assign"
           rec-fn:"rec"
           constant:"const"
@@ -43,8 +44,8 @@ fn mk_parser() -> Result<Syntax, String> {
           injr:"injr"
           match:"match"
         }
-       12 term = { ["(" .w? innerterm .w? ")"] innerterm}        
-       13 document = term:"term"
+        13 term = { ["(" .w? innerterm .w? ")"] innerterm} 
+        14 document = term:"term"
 	"#;
     match syntax_errstr(rules) {
         Err(err) => return Err(
