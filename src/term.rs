@@ -2,6 +2,7 @@
 use cfg::*;
 use var::*;
 use cst::*;
+use qubit::*;
 use range::Range;
 
 #[derive(Clone)]
@@ -16,6 +17,8 @@ pub enum Term {
     Injl(Box<Term>),
     Injr(Box<Term>),
     Mat(Box<Term>,Var,Box<Term>,Var,Box<Term>),
+    Bit(Bit),
+    Qubit(Qubit),
 }
 
 //"substitute t2 for x in t1"
@@ -32,6 +35,8 @@ fn subst(t2:&Term, x:&Var, t1:&Term) -> Term {
                 _ => t1.clone(),
             }
         },
+        Term::Bit( _ ) => t1.clone(),
+        Term::Qubit( _ ) => t1.clone(),
         Term::Const( _ ) => t1.clone(),
         Term::App(ref a, ref b) => Term::App(Box::new(subst(t2,x,a)),Box::new(subst(t2,x,b))),
         Term::Lam(ref v, ref a) => Term::Lam(v.clone(),Box::new(subst(t2,x,a))),
@@ -58,6 +63,17 @@ pub fn betared(t: &Term) -> Term {
         Term::Const( ref c ) => Term::Const(c.clone() ),
         Term::App(ref a, ref b) => {
             match **a {
+                Term::Const( ref c ) => match *c {
+                    Const::New => match **b {
+                        Term::Bit( ref q ) => Term::Qubit( Qubit::new( q ) ),
+                        _ => t.clone(),
+                    },
+                    Const::Meas => match **b {
+                        Term::Qubit( ref q ) => Term::Bit( q.meas() ),
+                        _ => t.clone(),
+                    },
+                    _ => t.clone(),
+                },
                 Term::Lam(ref x,ref t) => subst(b,&x,&*t),
                 _ => Term::App(Box::new(betared(a)),Box::new(betared(b))),
             }
@@ -94,6 +110,8 @@ pub fn betared(t: &Term) -> Term {
                 Term::Injr(ref term) => subst(term,y,c),
                 _ => t.clone(),
             },
+        Term::Bit( _ ) => t.clone(),
+        Term::Qubit( _ ) => t.clone(),
     }
 }
 
@@ -102,6 +120,8 @@ impl fmt::Display for Term {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
             Term::Const( ref c ) => write!(f, "{}", c),
+            Term::Bit( ref b ) => write!(f, "{}", b),
+            Term::Qubit( ref q ) => write!(f, "{}", q),
             Term::Var( ref v ) => write!(f, "{}", v),
             Term::App( ref a, ref b ) =>
                 match **a {

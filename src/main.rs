@@ -66,6 +66,31 @@ fn main() {
         Ok(rules) => rules
     };
   let stdin = io::stdin();
+  /*let mut input = String::new();
+  loop {
+    println!("Enter term to be reduced:");
+    stdin.read_to_string(&mut input).expect("failed to read from stdin");
+    let mut data = vec![];
+    match parse_errstr(&rules, &input[..], &mut data) {
+      Err(err) => {
+        println!("{}", err);
+        return;
+      },
+      Ok(_) => (),
+    };
+    let mut nodelist = (&data).into_iter();
+    let term = make_term(&mut nodelist);
+    println!("Your Term: {}",term);
+    println!("How many parallel reduction steps?");
+    stdin.read_line(&mut input).expect("failed to read from stdin");
+    let trimmed = input.trim();
+    let mut steps = 0;
+    match trimmed.parse::<u32>() {
+        Ok(i) => steps = i,
+        Err(..) => println!("this was not an integer: {}", trimmed)
+    };
+  }*/
+  
   for line in stdin.lock().lines() {
       let input = line.unwrap();
       let mut data = vec![];
